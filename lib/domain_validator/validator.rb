@@ -33,7 +33,7 @@ module DomainValidator
     def verify_dns_message
       verify_dns = options[:verify_dns]
       if verify_dns.is_a? Hash
-        verify_dns[:message] || options[:message]
+        verify_dns[:message]
       end
     end
 
