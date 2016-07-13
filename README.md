@@ -43,6 +43,41 @@ class User < ActiveRecord::Base
 end
 ```
 
+DomainValidator can also check that the domain points to the same IP
+as a given domain. This is useful if you want users to set up their
+own CNAME for a given domain.
+
+```ruby
+class User < ActiveRecord::Base
+  attr_accessible :domain
+  validates :domain, :domain => {:verify_dns => true, :same_ip_as => "domains.myservice.com"}
+
+  # Also supports different messages for missing or incorrect DNS records
+  # validates :domain, :domain => {
+  #   :verify_dns => {
+  #     :same_ip_as => "domains.myservice.com",
+  #     :missing_dns_record => "DNS record not found",
+  #     :incorrect_dns_record => "Ensure domain is a CNAME for domains.myservice.com"
+  #   }
+  # }
+end
+```
+
+The `:same_ip_as` option also supports taking a lambda in case you
+need to read the value from a lazily initialized resource.
+
+```ruby
+class User < ActiveRecord::Base
+  attr_accessible :domain
+
+  validates :domain, :domain => {
+    :verify_dns => {
+      :same_ip_as => lambda { SomeLazy.config.domain }
+    }
+  }
+end
+```
+
 ## Examples
 
 ```ruby
@@ -53,12 +88,30 @@ user.domain = 'invalid*characters.com'
 user.valid? # => false
 ```
 
+## Translations
+
+The default error messages can be overridden via translations:
+
+    activerecord:
+      errors:
+        models:
+          user:
+            attributes:
+              domain:
+                invalid_domain: "Not a valid domain."
+                missing_dns_record: "DNS record not found."
+                invalid_dns_record: "DNS record is not setup correctly."
+
+See
+[Rails documentation](http://api.rubyonrails.org/classes/ActiveModel/Errors.html#method-i-generate_message)
+for a full list of possible translation scopes.
+
 ## Compatibility
 
 DomainValidator is tested against:
 
 MRI 1.9.3, 2.0, 2.1.1, 2.1.2
-JRuby 1.9  
+JRuby 1.9
 Rubinus 2.1.1
 
 ## Contributing

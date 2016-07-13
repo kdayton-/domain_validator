@@ -19,5 +19,7 @@ end
 
 RSpec.configure do |c|
   require 'support/domain_helpers'
+  require 'support/translations_helpers'
   c.extend DomainHelpers
+  c.include TranslationsHelpers
 end

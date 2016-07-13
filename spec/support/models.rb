@@ -33,3 +33,30 @@ end
 class UserVerifyDNSMessage < Model
   validates :domain, :domain => {:verify_dns => {:message => "failed DNS check"}}
 end
+
+class UserVerifyExampleDotCom < Model
+  validates :domain, :domain => {
+    :verify_dns => {
+      :same_ip_as => "example.com"
+    }
+  }
+end
+
+class UserVerifyExampleDotComWithMessage < Model
+  validates :domain, :domain => {
+    :verify_dns => {
+      :same_ip_as => "example.com",
+      :message => "failed DNS check"
+    }
+  }
+end
+
+class UserVerifyExampleDotComWithSpecificMessages < Model
+  validates :domain, :domain => {
+    :verify_dns => {
+      :same_ip_as => "example.com",
+      :incorrect_dns_record => "wrong ip",
+      :missing_dns_record => "missing record"
+    }
+  }
+end
