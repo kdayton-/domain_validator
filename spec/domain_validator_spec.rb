@@ -97,15 +97,92 @@ describe DomainValidator do
 
       it "should add the default message" do
         subject.valid?
-        expect(subject.errors[:domain]).to include "does not have a DNS record"
+        expect(subject.errors[:domain]).to include "does not have a valid DNS record"
       end
 
       it "should prefer localized message" do
-        with_error_translation(subject, :invalid_dns_record, "dns not right") do
+        with_error_translation(subject, :missing_dns_record, "dns not right") do
           subject.valid?
           expect(subject.errors[:domain]).to include "dns not right"
         end
       end
+    end
+
+    context "when :verifiy_dns has a :same_ip_as option" do
+      context "when :verfiy_dns does not have a message option" do
+        context "with a domain without a DNS record" do
+          subject { UserVerifyExampleDotCom.new :domain => "a.com" }
+
+          it "should add the default message" do
+            subject.valid?
+            expect(subject.errors[:domain]).to include "does not have a valid DNS record"
+          end
+
+          it "should prefer localized message" do
+            with_error_translation(subject, :missing_dns_record, "dns not right") do
+              subject.valid?
+              expect(subject.errors[:domain]).to include "dns not right"
+            end
+          end
+        end
+
+        context "with a domain that resolves to wrong ip" do
+          subject { UserVerifyExampleDotCom.new :domain => "rubygems.org" }
+
+          it "should add the default message" do
+            subject.valid?
+            expect(subject.errors[:domain]).to include "does not have a valid DNS record"
+          end
+
+          it "should prefer localized message" do
+            with_error_translation(subject, :incorrect_dns_record, "dns not right") do
+              subject.valid?
+              expect(subject.errors[:domain]).to include "dns not right"
+            end
+          end
+        end
+      end
+
+      context "when :verfiy_dns has a message option" do
+        context "with a domain without a DNS record" do
+          subject { UserVerifyExampleDotComWithMessage.new :domain => "a.com" }
+          before { subject.valid? }
+
+          it "should add the customized message" do
+            expect(subject.errors[:domain]).to include "failed DNS check"
+          end
+        end
+
+        context "with a domain that resolves to wrong ip" do
+          subject { UserVerifyExampleDotComWithMessage.new :domain => "rubygems.org" }
+          before { subject.valid? }
+
+          it "should add the customized message" do
+            expect(subject.errors[:domain]).to include "failed DNS check"
+          end
+        end
+      end
+
+      context "when :verfiy_dns has specific message options" do
+        context "with a domain without a DNS record" do
+          subject { UserVerifyExampleDotComWithSpecificMessages.new :domain => "a.com" }
+          before { subject.valid? }
+
+          it "should add the customized message" do
+            expect(subject.errors[:domain]).to include "missing record"
+          end
+        end
+
+        context "with a domain that resolves to wrong ip" do
+          subject { UserVerifyExampleDotComWithSpecificMessages.new :domain => "rubygems.org" }
+          before { subject.valid? }
+
+          it "should add the invalid_record message" do
+            expect(subject.errors[:domain]).to include "wrong ip"
+          end
+        end
+      end
+
     end
   end
 
@@ -133,6 +210,18 @@ describe DomainValidator do
         user = User.new(:domain => "example.com")
         expect(user).to be_valid
       end
+
+      describe "when :verifiy_dns has :same_ip_as option" do
+        it "should be valid when domain resolves to same ip" do
+          user = UserVerifyExampleDotCom.new(:domain => "www.example.com")
+          expect(user).to be_valid
+        end
+
+        it "should not be valid domain resolves to different ip" do
+          user = UserVerifyExampleDotCom.new(:domain => "rubygems.org")
+          expect(user).not_to be_valid
+        end
+      end
     end
 
     describe "a domain without a DNS record" do
@@ -149,6 +238,11 @@ describe DomainValidator do
       it "should be valid when :verify_dns is undefined" do
         user = User.new(:domain => "a.com")
         expect(user).to be_valid
+      end
+
+      it "should not be valid when :verify_dns has :same_ip_as option" do
+        user = UserVerifyExampleDotCom.new(:domain => "a.com")
+        expect(user).not_to be_valid
       end
     end
   end
