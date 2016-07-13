@@ -60,10 +60,17 @@ describe DomainValidator do
   describe "error messages" do
     context "when the :message option is not defined" do
       subject { User.new :domain => "notadomain" }
-      before { subject.valid? }
 
       it "should add the default message" do
+        subject.valid?
         expect(subject.errors[:domain]).to include "is invalid"
+      end
+
+      it "should prefer localized message" do
+        with_error_translation(subject, :invalid_domain, "not right") do
+          subject.valid?
+          expect(subject.errors[:domain]).to include "not right"
+        end
       end
     end
 
@@ -87,10 +94,17 @@ describe DomainValidator do
 
     context "when :verify_dns does not have a :message option" do
       subject { UserVerifyDNS.new :domain => "a.com" }
-      before { subject.valid? }
 
       it "should add the default message" do
+        subject.valid?
         expect(subject.errors[:domain]).to include "does not have a DNS record"
+      end
+
+      it "should prefer localized message" do
+        with_error_translation(subject, :invalid_dns_record, "dns not right") do
+          subject.valid?
+          expect(subject.errors[:domain]).to include "dns not right"
+        end
       end
     end
   end

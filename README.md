@@ -53,12 +53,29 @@ user.domain = 'invalid*characters.com'
 user.valid? # => false
 ```
 
+## Translations
+
+The default error messages can be overridden via translations:
+
+    activerecord:
+      errors:
+        models:
+          user:
+            attributes:
+              domain:
+                invalid_domain: "Not a valid domain."
+                invalid_dns_record: "DNS check failed."
+
+See
+[Rails documentation](http://api.rubyonrails.org/classes/ActiveModel/Errors.html#method-i-generate_message)
+for a full list of possible translation scopes.
+
 ## Compatibility
 
 DomainValidator is tested against:
 
 MRI 1.9.3, 2.0, 2.1.1, 2.1.2
-JRuby 1.9  
+JRuby 1.9
 Rubinus 2.1.1
 
 ## Contributing
